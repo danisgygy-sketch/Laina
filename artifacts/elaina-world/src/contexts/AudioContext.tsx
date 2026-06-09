@@ -7,7 +7,6 @@ interface AudioContextType {
   playChime: (pitch?: number) => void;
   playMagicCircle: () => void;
   playPageTransition: () => void;
-  startAmbient: () => void;
 }
 
 export const AudioContext = createContext<AudioContextType | null>(null);
@@ -15,8 +14,6 @@ export const AudioContext = createContext<AudioContextType | null>(null);
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const [isMuted, setIsMuted] = useState(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const ambientGainRef = useRef<GainNode | null>(null);
-  const isStarted = useRef(false);
 
   const initAudio = () => {
     if (audioCtxRef.current) return;
@@ -35,10 +32,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     const handleInteraction = () => {
       initAudio();
       ensurePlaying();
-      if (!isStarted.current) {
-        startAmbient();
-        isStarted.current = true;
-      }
     };
     
     window.addEventListener("click", handleInteraction, { once: true });
@@ -49,16 +42,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener("keydown", handleInteraction);
     };
   }, []);
-
-  useEffect(() => {
-    if (ambientGainRef.current && audioCtxRef.current) {
-      ambientGainRef.current.gain.setTargetAtTime(
-        isMuted ? 0 : 0.04,
-        audioCtxRef.current.currentTime,
-        0.5
-      );
-    }
-  }, [isMuted]);
 
   const toggleMute = () => setIsMuted(prev => !prev);
 
@@ -74,7 +57,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     osc.frequency.exponentialRampToValueAtTime(2400, ctx.currentTime + 0.15);
     
     gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.02);
+    gain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
     
     osc.connect(gain);
@@ -99,7 +82,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     osc2.frequency.setValueAtTime(pitch * 1.01, ctx.currentTime); // detune
     
     gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.01);
+    gain.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
     
     osc1.connect(gain);
@@ -126,7 +109,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       osc.frequency.exponentialRampToValueAtTime(f * 2, ctx.currentTime + 0.5);
       
       gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.12 / freqs.length, ctx.currentTime + 0.1);
+      gain.gain.linearRampToValueAtTime(0.06 / freqs.length, ctx.currentTime + 0.1);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5 + i * 0.1);
       
       osc.connect(gain);
@@ -145,7 +128,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       osc.type = "sine";
       osc.frequency.setValueAtTime(1760, ctx2.currentTime);
       gain.gain.setValueAtTime(0, ctx2.currentTime);
-      gain.gain.linearRampToValueAtTime(0.1, ctx2.currentTime + 0.01);
+      gain.gain.linearRampToValueAtTime(0.05, ctx2.currentTime + 0.01);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 0.4);
       osc.connect(gain);
       gain.connect(ctx2.destination);
@@ -175,7 +158,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.1);
+    gain.gain.linearRampToValueAtTime(0.03, ctx.currentTime + 0.1);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
     
     noise.connect(filter);
@@ -185,43 +168,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     noise.start();
   };
 
-  const startAmbient = () => {
-    if (!audioCtxRef.current) return;
-    const ctx = audioCtxRef.current;
-    
-    const osc1 = ctx.createOscillator();
-    const osc2 = ctx.createOscillator();
-    const lfo = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const lfoGain = ctx.createGain();
-    
-    osc1.type = "sine";
-    osc2.type = "sine";
-    osc1.frequency.value = 110;
-    osc2.frequency.value = 165; 
-    
-    lfo.type = "sine";
-    lfo.frequency.value = 0.2; 
-    
-    gain.gain.value = isMuted ? 0 : 0.04;
-    ambientGainRef.current = gain;
-    
-    lfoGain.gain.value = 0.015;
-    
-    lfo.connect(lfoGain);
-    lfoGain.connect(gain.gain);
-    
-    osc1.connect(gain);
-    osc2.connect(gain);
-    gain.connect(ctx.destination);
-    
-    osc1.start();
-    osc2.start();
-    lfo.start();
-  };
-
   return (
-    <AudioContext.Provider value={{ isMuted, toggleMute, playSparkle, playChime, playMagicCircle, playPageTransition, startAmbient }}>
+    <AudioContext.Provider value={{ isMuted, toggleMute, playSparkle, playChime, playMagicCircle, playPageTransition }}>
       {children}
     </AudioContext.Provider>
   );

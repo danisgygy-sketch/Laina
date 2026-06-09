@@ -9,6 +9,7 @@ import Home from "@/pages/Home";
 import Journey from "@/pages/Journey";
 import Gallery from "@/pages/Gallery";
 import Moments from "@/pages/Moments";
+import Chat from "@/pages/Chat";
 import Grimoire from "@/pages/Grimoire";
 import Lore from "@/pages/Lore";
 import NotFound from "@/pages/not-found";
@@ -31,6 +32,7 @@ function Router() {
         <Route path="/journey" component={Journey} />
         <Route path="/gallery" component={Gallery} />
         <Route path="/moments" component={Moments} />
+        <Route path="/chat" component={Chat} />
         <Route path="/grimoire" component={Grimoire} />
         <Route path="/lore" component={Lore} />
         <Route component={NotFound} />

@@ -10,6 +10,7 @@ const LINKS = [
   { name: "Journey", href: "/journey" },
   { name: "Gallery", href: "/gallery" },
   { name: "Moments", href: "/moments" },
+  { name: "Chat", href: "/chat" },
   { name: "Grimoire", href: "/grimoire" },
   { name: "Lore", href: "/lore" },
 ];
