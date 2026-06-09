@@ -5,6 +5,7 @@ import { X, Star } from "lucide-react";
 
 import imgFlowerCrown from "@assets/edited-photo_(5)_1781016102147.png";
 import imgAlternate from "@assets/Adobe_Express_-_file_1781016102419.png";
+import elainaKimono from "@localassets/elaina_kimono.png";
 
 export default function Lore() {
   const { playSparkle, playChime } = useAudio();
@@ -62,6 +63,21 @@ export default function Lore() {
                 <p className="text-sm font-serif italic text-white/80 border-l-2 border-primary pl-3 py-1">
                   "Who is this beautiful girl? That's right, it's me."
                 </p>
+              </div>
+            </div>
+
+            {/* Seasonal Portrait */}
+            <div className="mt-8 pt-6 border-t border-white/10">
+              <h4 className="text-sm uppercase tracking-widest text-primary font-bold mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                Seasonal Portrait
+              </h4>
+              <div className="relative rounded-xl overflow-hidden border border-rose-400/30 p-1 bg-gradient-to-br from-rose-900/20 to-transparent shadow-[0_0_20px_rgba(244,63,94,0.1)] group">
+                <div className="absolute inset-0 bg-gradient-to-t from-rose-950/80 to-transparent z-10" />
+                <img src={elainaKimono} alt="Seasonal Elaina" className="w-full h-auto object-cover rounded-lg group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute bottom-3 left-3 z-20">
+                  <p className="text-xs text-rose-200 font-serif italic drop-shadow-md">Festival Mode 🎋</p>
+                </div>
               </div>
             </div>
           </div>

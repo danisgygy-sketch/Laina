@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Home from "@/pages/Home";
 import Journey from "@/pages/Journey";
 import Gallery from "@/pages/Gallery";
+import Moments from "@/pages/Moments";
 import Grimoire from "@/pages/Grimoire";
 import Lore from "@/pages/Lore";
 import NotFound from "@/pages/not-found";
@@ -16,6 +17,7 @@ import { AudioProvider } from "@/contexts/AudioContext";
 import { CursorTrail } from "@/components/CursorTrail";
 import { RippleEffect } from "@/components/RippleEffect";
 import { Navbar } from "@/components/Navbar";
+import { ElainaCompanion } from "@/components/ElainaCompanion";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +30,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/journey" component={Journey} />
         <Route path="/gallery" component={Gallery} />
+        <Route path="/moments" component={Moments} />
         <Route path="/grimoire" component={Grimoire} />
         <Route path="/lore" component={Lore} />
         <Route component={NotFound} />
@@ -50,6 +53,7 @@ function App() {
             <RippleEffect />
             <Navbar />
             <Router />
+            <ElainaCompanion />
           </WouterRouter>
         </AudioProvider>
         <Toaster />

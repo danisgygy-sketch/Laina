@@ -9,6 +9,7 @@ const LINKS = [
   { name: "Home", href: "/" },
   { name: "Journey", href: "/journey" },
   { name: "Gallery", href: "/gallery" },
+  { name: "Moments", href: "/moments" },
   { name: "Grimoire", href: "/grimoire" },
   { name: "Lore", href: "/lore" },
 ];

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAudio } from "@/hooks/useAudio";
+import elainaSmile from "@localassets/elaina_smile.png";
 
 const SPELLS = [
   { name: "Silver Wind", type: "Wind Magic", rank: "✦✦✦✦✦ · S-Rank", desc: "A powerful gust of silver wind that can cut through steel and carry the caster for miles.", time: "Instant" },
@@ -34,6 +35,14 @@ export default function Grimoire() {
         
         {/* Header & Magic Circle */}
         <div className="flex flex-col items-center mb-20 relative">
+          <motion.img 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, delay: 0.5 }}
+            src={elainaSmile}
+            alt="Elaina Decorative"
+            className="absolute -top-10 -right-10 w-[120px] object-contain animate-float drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] z-20 pointer-events-none hidden md:block"
+          />
           <div 
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none opacity-20"
             style={{ 
