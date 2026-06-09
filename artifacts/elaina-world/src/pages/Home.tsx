@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
+import { Link } from "wouter";
+import { ChevronDown } from "lucide-react";
 
 import { StarField } from "@/components/StarField";
 import { ParticleSystem } from "@/components/ParticleSystem";
 import { CharacterCard } from "@/components/CharacterCard";
 import { FloatingWidgets } from "@/components/FloatingWidgets";
+import { useAudio } from "@/hooks/useAudio";
 
 // Assets
 import heroImg from "@assets/Adobe_Express_-_file_1781016014862.png";
@@ -26,10 +29,20 @@ const CARDS = [
   { name: "Reaching Out", mood: "Ethereal", description: "Grasping at fading memories in a world that constantly changes.", imageSrc: imgReaching },
 ];
 
+const QUOTES = [
+  "Ehehe~ Welcome to my world!",
+  "I've been waiting for you, traveler...",
+  "Would you like some magical candy? ✦",
+  "The road ahead is full of wonder!",
+  "Don't stare too long, you'll fall in love~"
+];
+
 export default function Home() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isScrolled, setIsScrolled] = useState(false);
   const [emblaRef] = useEmblaCarousel({ dragFree: true, containScroll: "trimSnaps" });
+  const [quoteIndex, setQuoteIndex] = useState(0);
+  const [showQuote, setShowQuote] = useState(true);
+  const { playSparkle, playPageTransition } = useAudio();
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -40,51 +53,34 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const interval = setInterval(() => {
+      setShowQuote(false);
+      setTimeout(() => {
+        setQuoteIndex((prev) => (prev + 1) % QUOTES.length);
+        setShowQuote(true);
+      }, 500);
+    }, 8000);
+    return () => clearInterval(interval);
   }, []);
 
-  const scrollTo = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
+  const scrollToGallery = () => {
+    document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden selection:bg-primary/30 selection:text-white">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4, ease: "easeInOut" }}
+      className="relative min-h-screen w-full overflow-x-hidden selection:bg-primary/30 selection:text-white"
+    >
       {/* Global Background Systems */}
       <StarField mouseX={mousePos.x} mouseY={mousePos.y} />
       <div className="fixed inset-0 pointer-events-none z-[-1] opacity-30 mix-blend-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent"></div>
       <div className="fixed inset-0 pointer-events-none z-[-1] opacity-20 mix-blend-screen bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-secondary/20 via-transparent to-transparent"></div>
 
       <FloatingWidgets />
-
-      {/* Navbar */}
-      <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${isScrolled ? "glass-panel py-4" : "bg-transparent py-6"}`}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between">
-          <div className="text-2xl font-serif font-bold text-white glow-text tracking-wide cursor-pointer" onClick={() => scrollTo('hero')}>
-            ✦ Elaina
-          </div>
-          <div className="hidden md:flex items-center gap-8">
-            {['Journey', 'Gallery', 'Grimoire', 'Lore'].map((item) => (
-              <button 
-                key={item}
-                onClick={() => scrollTo(item.toLowerCase())}
-                className="text-sm text-white/70 hover:text-white hover:glow-text transition-all tracking-wider uppercase"
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-          <button className="hidden md:block px-6 py-2 rounded-full border border-white/20 text-white text-sm uppercase tracking-wider hover:bg-white/10 transition-colors">
-            Contact
-          </button>
-        </div>
-      </nav>
 
       {/* Hero Section */}
       <section id="hero" className="relative min-h-screen flex items-center pt-20 overflow-hidden">
@@ -117,13 +113,13 @@ export default function Home() {
             </p>
             
             <div className="flex items-center gap-6 mt-4">
-              <button className="relative px-8 py-4 rounded-full overflow-hidden group bg-primary/20 border border-primary/50 text-white font-bold tracking-widest uppercase text-sm hover:scale-105 transition-transform duration-300">
+              <Link href="/journey" onClick={playPageTransition} className="relative px-8 py-4 rounded-full overflow-hidden group bg-primary/20 border border-primary/50 text-white font-bold tracking-widest uppercase text-sm hover:scale-105 transition-transform duration-300 block">
                 <span className="absolute inset-0 bg-gradient-to-r from-primary via-secondary to-primary opacity-50 group-hover:opacity-100 transition-opacity duration-300 shimmer-bg" />
-                <span className="relative z-10 drop-shadow-md">Enter Dream</span>
-              </button>
-              <button className="px-8 py-4 rounded-full border border-secondary/50 text-white font-bold tracking-widest uppercase text-sm hover:bg-secondary/10 hover:shadow-[0_0_20px_hsl(var(--secondary)/0.3)] transition-all duration-300">
-                Explore World
-              </button>
+                <span className="relative z-10 drop-shadow-md">Begin Journey</span>
+              </Link>
+              <Link href="/lore" onClick={playPageTransition} className="px-8 py-4 rounded-full border border-secondary/50 text-white font-bold tracking-widest uppercase text-sm hover:bg-secondary/10 hover:shadow-[0_0_20px_hsl(var(--secondary)/0.3)] transition-all duration-300 block">
+                Read Lore
+              </Link>
             </div>
           </motion.div>
 
@@ -137,6 +133,21 @@ export default function Home() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/3 -translate-y-1/3 w-[300px] h-[300px] bg-secondary/20 rounded-full blur-[80px] pointer-events-none" />
             
+            {/* Dialogue Bubble */}
+            <AnimatePresence>
+              {showQuote && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.5, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                  transition={{ type: "spring", damping: 15 }}
+                  className="absolute top-10 right-20 lg:right-40 z-20 glass-panel px-6 py-4 rounded-2xl rounded-br-none border-primary/40 shadow-[0_0_20px_hsl(var(--primary)/0.2)] max-w-[250px]"
+                >
+                  <p className="text-white text-sm font-serif italic relative z-10">{QUOTES[quoteIndex]}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <motion.div
               style={{
                 x: (mousePos.x - window.innerWidth / 2) * -0.02,
@@ -152,15 +163,23 @@ export default function Home() {
             </motion.div>
 
             {/* Decorative floaters */}
-            <span className="absolute top-20 right-20 text-2xl text-primary/50 animate-pulse">✦</span>
-            <span className="absolute bottom-40 left-10 text-xl text-secondary/50 animate-float-slow delay-1000">✧</span>
-            <span className="absolute top-1/3 left-20 text-3xl text-accent/40 animate-pulse delay-500">★</span>
+            <span className="absolute top-20 right-20 text-2xl text-primary/50 animate-pulse pointer-events-none">✦</span>
+            <span className="absolute bottom-40 left-10 text-xl text-secondary/50 animate-float-slow delay-1000 pointer-events-none">✧</span>
+            <span className="absolute top-1/3 left-20 text-3xl text-accent/40 animate-pulse delay-500 pointer-events-none">★</span>
           </motion.div>
+        </div>
 
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer z-20 group" onClick={scrollToGallery}>
+          <span className="text-xs text-white/50 uppercase tracking-widest font-bold group-hover:text-primary transition-colors">Scroll to explore</span>
+          <div className="flex flex-col items-center animate-bounce">
+            <ChevronDown className="w-5 h-5 text-white/70 -mb-2 group-hover:text-primary transition-colors" />
+            <ChevronDown className="w-5 h-5 text-white/50 group-hover:text-primary/70 transition-colors" />
+          </div>
         </div>
       </section>
 
-      {/* Gallery Section */}
+      {/* Gallery Section Preview */}
       <section id="gallery" className="py-32 relative">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-16 flex flex-col items-center text-center">
           <motion.div
@@ -195,102 +214,18 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
+                onMouseEnter={playSparkle}
               >
                 <CharacterCard {...card} />
               </motion.div>
             ))}
           </div>
         </motion.div>
-      </section>
-
-      {/* Quote Section */}
-      <section id="grimoire" className="py-32 relative flex items-center justify-center">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1 }}
-          className="relative max-w-4xl mx-6 w-full"
-        >
-          {/* Decorative scatter */}
-          <span className="absolute -top-10 -left-10 text-3xl text-primary animate-pulse">✦</span>
-          <span className="absolute top-20 -right-12 text-2xl text-secondary animate-float">✧</span>
-          <span className="absolute -bottom-10 right-10 text-xl text-accent animate-pulse delay-300">★</span>
-          
-          <div className="glass-panel p-12 md:p-20 rounded-3xl text-center relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            <p className="text-2xl md:text-4xl font-serif italic text-white/90 leading-relaxed mb-8 relative z-10 glow-text">
-              "The journey is not about the destination. It is about the people you meet, and the stories you carry home."
-            </p>
-            <p className="text-primary font-bold tracking-[0.2em] uppercase text-sm relative z-10">
-              — Elaina, The Silver Witch
-            </p>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Lore Section */}
-      <section id="lore" className="py-32 relative">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 1 }}
-            className="relative h-[600px] rounded-3xl overflow-hidden glass-panel group"
-          >
-            <div className="absolute inset-0 bg-primary/20 mix-blend-overlay z-10 transition-opacity duration-500 group-hover:opacity-0" />
-            <img 
-              src={imgAlternate} 
-              alt="Elaina Casting" 
-              className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105"
-            />
-            <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/80 to-transparent z-20" />
-            <div className="absolute bottom-8 left-8 right-8 z-30">
-              <div className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold text-white uppercase tracking-wider mb-3">
-                Current Location: Unknown
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="flex flex-col gap-8"
-          >
-            <div>
-              <h2 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6">The Silver Witch</h2>
-              <p className="text-white/70 text-lg leading-relaxed mb-4">
-                Fascinated by the stories of Nike's adventures since childhood, Elaina set out to become a witch and travel the world. Defying the odds, she became the youngest apprentice to pass the sorcery exams.
-              </p>
-              <p className="text-white/70 text-lg leading-relaxed">
-                Her journey has no singular goal. She merely travels, observes, and occasionally intervenes—a passing observer in the grand tapestry of countless lives. Beautiful, talented, and delightfully arrogant.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
-              {['⚔️ S-Rank Witch', '🧭 Eternal Traveler', '📖 Seeker of Stories'].map((badge) => (
-                <div key={badge} className="glass-panel px-5 py-2.5 rounded-full border-white/10 text-sm font-medium text-white/90 hover:bg-white/10 transition-colors cursor-default">
-                  {badge}
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-8 border-t border-white/10">
-              <p className="text-sm text-white/50 uppercase tracking-widest font-bold mb-4">Magical Affinities</p>
-              <div className="flex flex-wrap gap-3">
-                {['Elemental Weaving', 'Flight Magic', 'Time Restoration', 'Combat Sorcery'].map((tag) => (
-                  <span key={tag} className="text-xs bg-white/5 border border-white/10 px-3 py-1 rounded text-white/70">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
+        
+        <div className="flex justify-center mt-12">
+          <Link href="/gallery" onClick={playPageTransition} className="px-8 py-3 rounded-full border border-white/20 text-white hover:bg-white/10 transition-colors uppercase tracking-widest text-sm font-bold">
+            View Full Gallery
+          </Link>
         </div>
       </section>
 
@@ -317,6 +252,6 @@ export default function Home() {
           </p>
         </div>
       </footer>
-    </div>
+    </motion.div>
   );
 }
