@@ -1,9 +1,9 @@
 import { Router, type IRouter } from "express";
-import OpenAI from "openai";
+import Groq from "groq-sdk";
 
 const router: IRouter = Router();
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const ELAINA_SYSTEM_PROMPT = `You are Elaina, the Silver Witch — the protagonist of "Wandering Witch: The Journey of Elaina" (Majo no Tabitabi).
 
@@ -55,6 +55,8 @@ You travel the world endlessly, documenting your journeys in books titled "Witch
 
 Now, respond to the traveler's message as Elaina would.`;
 
+type MessageParam = { role: "system" | "user" | "assistant"; content: string };
+
 router.post("/elaina/chat", async (req, res): Promise<void> => {
   const { message, history } = req.body as {
     message: string;
@@ -66,17 +68,17 @@ router.post("/elaina/chat", async (req, res): Promise<void> => {
     return;
   }
 
-  const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+  const messages: MessageParam[] = [
     { role: "system", content: ELAINA_SYSTEM_PROMPT },
-    ...((history || []).slice(-10) as OpenAI.Chat.ChatCompletionMessageParam[]),
+    ...((history || []).slice(-10) as MessageParam[]),
     { role: "user", content: message },
   ];
 
   req.log.info({ messageLength: message.length }, "Elaina chat request");
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
       messages,
       max_tokens: 300,
       temperature: 0.85,
@@ -86,11 +88,11 @@ router.post("/elaina/chat", async (req, res): Promise<void> => {
     res.json({ reply });
   } catch (err: unknown) {
     const status = (err as { status?: number }).status ?? 500;
-    req.log.error({ err }, "OpenAI chat error");
+    req.log.error({ err }, "Groq chat error");
     if (status === 429) {
-      res.status(503).json({ error: "quota_exceeded", reply: "My magical correspondence is momentarily overloaded~ Please try again in a little while, traveler." });
+      res.status(503).json({ error: "rate_limited", reply: "My magical correspondence is momentarily overloaded~ Please try again in a little while, traveler." });
     } else {
-      res.status(500).json({ error: "openai_error", reply: "Hmm... it seems my magical correspondence is disrupted. Try again in a moment~" });
+      res.status(500).json({ error: "groq_error", reply: "Hmm... it seems my magical correspondence is disrupted. Try again in a moment~" });
     }
   }
 });
@@ -106,24 +108,24 @@ router.post("/elaina/diary", async (req, res): Promise<void> => {
   req.log.info({ location }, "Elaina diary generation request");
 
   try {
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: ELAINA_SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: `Write a short travel diary entry (3-4 sentences) about visiting "${location}". Write it in your voice as Elaina, as if it's an excerpt from "Witch's Journey." Make it poetic, observant, and slightly narcissistic. Describe something memorable you saw or experienced there.`,
-      },
-    ],
-    max_tokens: 200,
-    temperature: 0.9,
-  });
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        { role: "system", content: ELAINA_SYSTEM_PROMPT },
+        {
+          role: "user",
+          content: `Write a short travel diary entry (3-4 sentences) about visiting "${location}". Write it in your voice as Elaina, as if it's an excerpt from "Witch's Journey." Make it poetic, observant, and slightly narcissistic. Describe something memorable you saw or experienced there.`,
+        },
+      ],
+      max_tokens: 200,
+      temperature: 0.9,
+    });
 
     const entry = completion.choices[0]?.message?.content ?? "The road was long, and the wind carried secrets I dare not repeat.";
     res.json({ entry, location });
   } catch (err: unknown) {
-    req.log.error({ err }, "OpenAI diary error");
-    res.status(500).json({ error: "openai_error", entry: "The road was long, and the wind carried secrets I dare not repeat.", location });
+    req.log.error({ err }, "Groq diary error");
+    res.status(500).json({ error: "groq_error", entry: "The road was long, and the wind carried secrets I dare not repeat.", location });
   }
 });
 
