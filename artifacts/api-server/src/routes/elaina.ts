@@ -74,16 +74,25 @@ router.post("/elaina/chat", async (req, res): Promise<void> => {
 
   req.log.info({ messageLength: message.length }, "Elaina chat request");
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages,
-    max_tokens: 300,
-    temperature: 0.85,
-  });
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages,
+      max_tokens: 300,
+      temperature: 0.85,
+    });
 
-  const reply = completion.choices[0]?.message?.content ?? "...";
-
-  res.json({ reply });
+    const reply = completion.choices[0]?.message?.content ?? "Ehe~... it seems my words got lost on the wind. Try again~";
+    res.json({ reply });
+  } catch (err: unknown) {
+    const status = (err as { status?: number }).status ?? 500;
+    req.log.error({ err }, "OpenAI chat error");
+    if (status === 429) {
+      res.status(503).json({ error: "quota_exceeded", reply: "My magical correspondence is momentarily overloaded~ Please try again in a little while, traveler." });
+    } else {
+      res.status(500).json({ error: "openai_error", reply: "Hmm... it seems my magical correspondence is disrupted. Try again in a moment~" });
+    }
+  }
 });
 
 router.post("/elaina/diary", async (req, res): Promise<void> => {
@@ -96,6 +105,7 @@ router.post("/elaina/diary", async (req, res): Promise<void> => {
 
   req.log.info({ location }, "Elaina diary generation request");
 
+  try {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
@@ -109,9 +119,12 @@ router.post("/elaina/diary", async (req, res): Promise<void> => {
     temperature: 0.9,
   });
 
-  const entry = completion.choices[0]?.message?.content ?? "The road was long, and the wind carried secrets I dare not repeat.";
-
-  res.json({ entry, location });
+    const entry = completion.choices[0]?.message?.content ?? "The road was long, and the wind carried secrets I dare not repeat.";
+    res.json({ entry, location });
+  } catch (err: unknown) {
+    req.log.error({ err }, "OpenAI diary error");
+    res.status(500).json({ error: "openai_error", entry: "The road was long, and the wind carried secrets I dare not repeat.", location });
+  }
 });
 
 export default router;
